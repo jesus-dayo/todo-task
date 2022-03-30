@@ -1,5 +1,8 @@
 package com.dayosoft.todo.rest;
 
+import com.dayosoft.todo.model.Todo;
+import com.dayosoft.todo.repository.TodoRepository;
+import com.dayosoft.todo.type.Status;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,15 +24,23 @@ class TodoRestControllerTest {
 
     @Autowired
     TodoRestController controller;
+    @Autowired
+    TodoRepository todoRepository;
 
     @Autowired
     TestRestTemplate restTemplate;
 
     @Test
-    void givenGetRequest_whenReceived_shouldReturnTodoList() {
-        assertThat(this.restTemplate.getForObject(HTTP_LOCALHOST + port + API_TODO,
-                String.class)).contains("[{\"description\":\"Sample Task\",\"date\":\""
-                + LocalDate.now()
-                + "\",\"status\":\"Pending\"}]");
+    void givenUserId_whenGetTodoList_shouldReturnTodoList() {
+        final String userId = "u12345";
+        final LocalDate today = LocalDate.now();
+        todoRepository.save(Todo.builder().userId(userId)
+                .date(today)
+                .description("Sample Task").status(Status.Pending).build());
+
+        assertThat(this.restTemplate.getForObject(HTTP_LOCALHOST + port + API_TODO + "/" + userId,
+                String.class)).contains("[{\"id\":1,\"description\":\"Sample Task\",\"date\":\""
+                + today
+                + "\",\"status\":\"Pending\",\"userId\":\"u12345\"}]");
     }
 }
